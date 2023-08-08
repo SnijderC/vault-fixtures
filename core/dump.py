@@ -15,6 +15,7 @@ def dump_to_fixture_file(
     serializer: Callable[[NestedStrDict], str],
     path: str = "/",
     password: str | None = None,
+    dry_run: bool = False,
 ):
     # json.dump works too, but makes testing much harder that it has to be.
     fixture_data = dump(
@@ -25,7 +26,8 @@ def dump_to_fixture_file(
     if password:
         cipher = SymmetricCrypto(password)
         fixture_data = encrypt_fixture_data(fixture_data, cipher)
-    fixture.write(serializer(fixture_data))
+    if not dry_run:
+        fixture.write(serializer(fixture_data))
 
 
 def dump(*, hvac: hvac.Client, mount_point: str, path: str) -> NestedStrDict:

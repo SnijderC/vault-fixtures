@@ -15,4 +15,6 @@ def get_logger(name: str, level: int):
         datefmt="[%X]",
         handlers=[RichHandler(rich_tracebacks=True)],
     )
-    return logging.getLogger(name)
+    log = logging.getLogger(name)
+    log.setLevel(level)
+    return log

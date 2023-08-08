@@ -48,16 +48,16 @@ def error_handler(log: logging.Logger) -> Generator[None, Any, None]:
                 log.critical(exc)
         typer.Exit(2)
     except json.JSONDecodeError as exc:
-        log.critical(f"Invalid JSON data supplied. {exc}")
+        log.critical(f"Invalid JSON data supplied. {exc}", exc_info=log.level < 30)
         typer.Exit(3)
     except yaml.YAMLError as exc:
-        log.critical(f"Invalid YAML data supplied. {exc}")
+        log.critical(f"Invalid YAML data supplied. {exc}", exc_info=log.level < 30)
         typer.Exit(5)
     except OSError as exc:
-        log.critical(exc)
+        log.critical(exc, exc_info=log.level < 30)
         typer.Exit(4)
     except Exception as exc:
-        log.critical(exc)
+        log.critical(exc, exc_info=log.level < 30)
         if log.level <= logging.DEBUG:
             raise exc
         typer.Exit(127)
@@ -102,6 +102,17 @@ def dump(
     serializer: Annotated[
         SerializerChoices, typer.Option(help="Which serializer do you prefer? [default=yaml]")
     ] = SerializerChoices.yaml,
+    dry: Annotated[
+        bool,
+        typer.Option(
+            "-d",
+            "--dry",
+            help=(
+                "Do a dry-run, fetches the secrets and, serializes the data and optionally encrypts it but does not "
+                "store it in the output file."
+            ),
+        ),
+    ] = False,
 ) -> None:
     log_level = get_log_level(verbose)
     log = get_logger(__name__, log_level)
@@ -120,6 +131,7 @@ def dump(
                 serializer=_serializer,
                 path=path,
                 password=password or None,
+                dry_run=dry,
             )
         finally:
             if fh is not sys.stdout:
@@ -156,6 +168,14 @@ def load(
     deserializer: Annotated[
         DeSerializerChoices, typer.Option(help="Which deserializer does the fixture file require?")
     ] = DeSerializerChoices.auto,
+    dry: Annotated[
+        bool,
+        typer.Option(
+            "-d",
+            "--dry",
+            help="Do a dry-run, parses the file and does the load up to the point where vault is updated with the secrets.",
+        ),
+    ] = False,
 ) -> None:
     log_level = get_log_level(verbose)
     log = get_logger(__name__, log_level)
@@ -180,6 +200,7 @@ def load(
                 deserializer=_deserializer,
                 path=path,
                 password=password or None,
+                dry_run=dry,
             )
         finally:
             if fh is not sys.stdin:

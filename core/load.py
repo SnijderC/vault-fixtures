@@ -15,15 +15,16 @@ def load_fixture_from_file(
     deserializer: Callable[[TextIO], NestedStrDict],
     path: str = "/",
     password: str | None = None,
+    dry_run: bool = False,
 ) -> None:
     fixture_data = deserializer(fixture)
     if password:
         cipher = SymmetricCrypto(password)
         fixture_data = decrypt_fixture_data(fixture_data, cipher)
-    load(hvac=hvac, fixture=fixture_data, mount_point=mount_point, path=path)
+    load(hvac=hvac, fixture=fixture_data, mount_point=mount_point, path=path, dry_run=dry_run)
 
 
-def load(*, hvac: hvac.Client, fixture: dict, mount_point: str, path: str) -> None:
+def load(*, hvac: hvac.Client, fixture: dict, mount_point: str, path: str, dry_run: bool = False) -> None:
     """
     Imports a fixture from a dict.
 
@@ -52,7 +53,8 @@ def load(*, hvac: hvac.Client, fixture: dict, mount_point: str, path: str) -> No
     for _path, secrets in fixture_deserialize(data=fixture):
         if isinstance(secrets, str) and secrets.startswith("encrypted//"):
             raise RuntimeError("Fixture file is encrypted but not password was passed.")
-        hvac.secrets.kv.v2.create_or_update_secret(path=_path, secret=secrets, mount_point=mount_point)
+        if not dry_run:
+            hvac.secrets.kv.v2.create_or_update_secret(path=_path, secret=secrets, mount_point=mount_point)
 
 
 def fixture_deserialize(*, data: dict, _parent: str = "") -> Generator[tuple[str, str | NestedStrDict], None, None]:
