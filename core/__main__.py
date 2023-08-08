@@ -189,9 +189,9 @@ def load(
         if deserializer == "auto" and file.endswith(".json"):
             _deserializer = json_deserializer
         else:
-            _deserializer = yaml_deserializer
+            _deserializer = yaml_deserializer if deserializer == "auto" else json_deserializer
 
-        fh = sys.stdin if file == "-" else open(file, "wt", encoding="utf-8")
+        fh = sys.stdin if file == "-" else open(file, "rt", encoding="utf-8")
         try:
             load_fixture_from_file(
                 hvac=client,
