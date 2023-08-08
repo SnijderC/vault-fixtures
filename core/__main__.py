@@ -111,7 +111,7 @@ def dump(
         _serializer = functools.partial(json_serializer, pretty=pretty)
     with error_handler(log):
         client = get_hvac_client(host=host, port=port, token=token, tls=tls)
-        fh = sys.stdout if file != "-" else open(file, "wt", encoding="utf-8")
+        fh = sys.stdout if file == "-" else open(file, "wt", encoding="utf-8")
         try:
             dump_to_fixture_file(
                 hvac=client,
@@ -171,7 +171,7 @@ def load(
         else:
             _deserializer = yaml_deserializer
 
-        fh = sys.stdin if file != "-" else open(file, "wt", encoding="utf-8")
+        fh = sys.stdin if file == "-" else open(file, "wt", encoding="utf-8")
         try:
             load_fixture_from_file(
                 hvac=client,
