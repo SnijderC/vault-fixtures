@@ -5,7 +5,7 @@ import json
 import logging
 import re
 import sys
-from typing import Annotated, Any, Generator, Literal
+from typing import Annotated, Any, Generator
 
 import hvac
 import typer
@@ -15,6 +15,7 @@ from hvac.exceptions import VaultError
 from core.dump import dump_to_fixture_file
 from core.load import load_fixture_from_file
 from core.log import get_log_level, get_logger
+from core.serializers import DeSerializerChoices, SerializerChoices
 from core.serializers.json import json_deserializer, json_serializer
 from core.serializers.yaml import yaml_deserializer, yaml_serializer
 
@@ -99,8 +100,8 @@ def dump(
     ] = "",
     pretty: Annotated[bool, typer.Option(help="Pretty print the output (if JSON formatted")] = True,
     serializer: Annotated[
-        Literal["json", "yaml"], typer.Option(help="Which serializer do you prefer? [default=yaml]")
-    ] = "yaml",
+        SerializerChoices, typer.Option(help="Which serializer do you prefer? [default=yaml]")
+    ] = SerializerChoices.yaml,
 ) -> None:
     log_level = get_log_level(verbose)
     log = get_logger(__name__, log_level)
@@ -152,6 +153,9 @@ def load(
             help="Password to decrypt the dumped fixture, or none for plain text input.",
         ),
     ] = "",
+    deserializer: Annotated[
+        DeSerializerChoices, typer.Option(help="Which deserializer does the fixture file require?")
+    ] = DeSerializerChoices.auto,
 ) -> None:
     log_level = get_log_level(verbose)
     log = get_logger(__name__, log_level)
@@ -159,12 +163,13 @@ def load(
     with error_handler(log):
         client = get_hvac_client(host=host, port=port, token=token, tls=tls)
 
-        if isinstance(file, str) and not file.endswith((".yml", ".yaml", ".json")):
+        if file != "-" and not file.endswith((".yml", ".yaml", ".json")):
             raise RuntimeError("Invalid vault fixture file type, should be a YAML or JSON file.")
 
-        deserializer = yaml_deserializer
-        if file.endswith(".json"):
-            deserializer = json_deserializer
+        if deserializer == "auto" and file.endswith(".json"):
+            _deserializer = json_deserializer
+        else:
+            _deserializer = yaml_deserializer
 
         fh = sys.stdin if file != "-" else open(file, "wt", encoding="utf-8")
         try:
@@ -172,7 +177,7 @@ def load(
                 hvac=client,
                 fixture=fh,
                 mount_point=mount,
-                deserializer=deserializer,
+                deserializer=_deserializer,
                 path=path,
                 password=password or None,
             )
