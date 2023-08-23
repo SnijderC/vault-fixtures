@@ -1,7 +1,7 @@
 import json
 from typing import TextIO
 
-from core.type import NestedStrDict
+from vault_fix.type import NestedStrDict
 
 
 def json_serializer(data: NestedStrDict, **kwargs) -> str:

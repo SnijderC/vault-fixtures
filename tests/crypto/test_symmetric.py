@@ -1,9 +1,9 @@
+from typing import Any, Generator
 from unittest import mock
 
 import pytest
-
-from core import crypto
-from core.crypto.constants import AESKeySize
+from vault_fix import crypto
+from vault_fix.crypto.constants import AESKeySize
 
 PASSWORD = "hunter2"
 SECRET_MESSAGE = "Some day this will be replaced by my lattice-based crypto"
@@ -14,8 +14,8 @@ ENCRYPTED_SECRET_MESSAGE = (
 
 
 @pytest.fixture()
-def mock_pbkdf2_iterations():
-    with mock.patch("core.crypto.symmetric.PBKDF2_ITERATIONS", 1) as patched:
+def mock_pbkdf2_iterations() -> Generator[int, Any, None]:
+    with mock.patch("vault_fix.crypto.symmetric.PBKDF2_ITERATIONS", 1) as patched:
         yield patched
 
 

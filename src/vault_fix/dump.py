@@ -2,9 +2,9 @@ from typing import Callable, TextIO
 
 import hvac
 
-from core.crypto import encrypt_fixture_data
-from core.crypto.symmetric import SymmetricCrypto
-from core.type import NestedStrDict
+from vault_fix.crypto import encrypt_fixture_data
+from vault_fix.crypto.symmetric import SymmetricCrypto
+from vault_fix.type import NestedStrDict
 
 
 def dump_to_fixture_file(
@@ -42,7 +42,7 @@ def dump(*, hvac: hvac.Client, mount_point: str, path: str) -> NestedStrDict:
     :returns: Dictionary of secrets under ``{mount_point}/{path}``.
     """
     key: str
-    result = dict()
+    result: NestedStrDict = dict()
 
     vault = hvac.secrets.kv.v2
 

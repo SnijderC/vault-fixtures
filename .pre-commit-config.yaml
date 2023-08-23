@@ -1,0 +1,48 @@
+default_language_version:
+  python: python3.11
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.0.283
+    hooks:
+      - id: ruff
+
+  - repo: https://github.com/psf/black
+    rev: 22.12.0
+    hooks:
+      - id: black
+        args:
+          - --line-length=120
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.0.1
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - "types-PyYAML"
+          - "types-requests"
+
+  - repo: https://github.com/jazzband/pip-tools
+    rev: 7.1.0
+    hooks:
+      - id: pip-compile
+        name: pip-compile core
+        files: pyproject.toml
+        args: ["-o", "requirements/core.txt", "pyproject.toml"]
+
+      - id: pip-compile
+        name: pip-compile dev
+        files: pyproject.toml
+        args: ["--extra", "dev", "-o", "requirements/dev.txt", "pyproject.toml"]
+
+      - id: pip-compile
+        name: pip-compile build
+        files: pyproject.toml
+        args: ["--extra", "build", "-o", "requirements/build.txt", "pyproject.toml"]

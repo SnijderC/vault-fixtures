@@ -13,7 +13,7 @@ import struct
 from dataclasses import dataclass
 from typing import Text
 
-from core.crypto.constants import SUPPORTED_MODES, SUPPORTED_VERSIONS, VERSION, AESKeySize, CipherMode
+from vault_fix.crypto.constants import SUPPORTED_MODES, SUPPORTED_VERSIONS, VERSION, AESKeySize, CipherMode
 
 
 @dataclass
@@ -99,7 +99,10 @@ class CipherMessage:
         length = len(self.cipher_text)
         mode = self.mode & ~CipherMode.SYMMETRIC
         symmetric = (self.mode & ~mode).name.lower()
-        return f"<{cls} version {self.version}, {symmetric} {str(mode.name)} mode, {self.key_size*8} bit, len: {length} bytes>"
+        return (
+            f"<{cls} version {self.version}, {symmetric} {str(mode.name)} mode, {self.key_size*8} bit,"
+            f" len: {length} bytes>"
+        )
 
     def __str__(self):
         return self.pack()

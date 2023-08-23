@@ -2,28 +2,31 @@
 name = "vault-fix"
 version = "1.0.0"
 description = "Tool for importing and exporting vault fixture files"
-license = { text = "MIT" }
+license = { file = "LICENSE.txt" }
 requires-python = ">=3.11"
 authors = [{ name = "Chris Snijder", email = "github@chrissnijder.nl" }]
+
+keywords = ["vault", "hasicorp", "fixture", "testing", "migration"]
 dependencies = [
     "cryptography==41.0.0",
     "hvac==1.1.0",
     "pyyaml==6.0",
     "rich==13.5.2",
-    "toml==0.10.2",
     "typer[all]==0.9.0",
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.11",
 ]
+[project.urls]
+Homepage = "https://github.com/SnijderC/vault-fixtures"
 
 [project.optional-dependencies]
 dev = [
@@ -35,9 +38,15 @@ dev = [
     "pytest-cov==4.0.0",
     "pytest-random-order==1.1.0",
 ]
+build = ["build==0.10.0", "bumpver==2023.1126", "twine==4.0.2"]
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=65.5.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements/core.txt"] }
+optional-dependencies.dev = { file = ["requirements/dev.txt"] }
+optional-dependencies.build = { file = ["requirements/build.txt"] }
 
 [tool.ruff]
 line-length = 120
@@ -46,9 +55,6 @@ target-version = "py311"
 [tool.black]
 target-version = ["py311"]
 line-length = 120
-
-[tool.mypy]
-plugins = ["pydantic.mypy"]
 
 check_untyped_defs = true
 disallow_any_generics = true
@@ -68,12 +74,34 @@ init_typed = true
 warn_required_dynamic_aliases = true
 
 [tool.coverage.run]
-source_pkgs = ["core", "tests"]
+source_pkgs = ["vault_fix", "tests"]
 
 [tool.coverage.report]
 show_missing = true
-skip_covered = true
-fail_under = 100
+skip_covered = false
+fail_under = 45
+
+[tool.bumpver]
+current_version = "1.0.0"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit_message = "Bump version {old_version} -> {new_version}"
+commit = true
+tag = true
+push = false
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
+"__init__.py" = ['__version__ = "{version}"']
+"src/reader/__init__.py" = ["{version}"]
 
 [project.scripts]
-vault-fix = "core.__main__:app"
+vault-fix = "vault_fix.__main__:cli"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

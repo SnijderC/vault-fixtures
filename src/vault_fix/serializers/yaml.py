@@ -2,7 +2,7 @@ from typing import TextIO
 
 import yaml
 
-from core.type import NestedStrDict
+from vault_fix.type import NestedStrDict
 
 
 def yaml_serializer(data: NestedStrDict, **kwargs) -> str:

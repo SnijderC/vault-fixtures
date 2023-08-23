@@ -4,11 +4,11 @@ from unittest import mock
 
 import hvac
 import pytest
+from vault_fix.load import load, load_fixture_from_file
+from vault_fix.serializers.json import json_deserializer, json_serializer
+from vault_fix.serializers.yaml import yaml_deserializer
+from vault_fix.type import NestedStrDict
 
-from core.load import load, load_fixture_from_file
-from core.serializers.json import json_deserializer, json_serializer
-from core.serializers.yaml import yaml_deserializer
-from core.type import NestedStrDict
 from tests.fixtures import DUMPED_DATA_ENCRYPTED, DUMPED_DATA_PLAIN
 
 
@@ -44,7 +44,12 @@ def test_load_from_fixture_file(
 ) -> None:
     _fixture = io.StringIO(json_serializer(fixture))
     load_fixture_from_file(
-        hvac=mock_hvac, fixture=_fixture, mount_point="secret", path="/", deserializer=deserializer, password=password
+        hvac=mock_hvac,
+        fixture=_fixture,
+        mount_point="secret",
+        path="/",
+        deserializer=deserializer,
+        password=password,
     )
     assert mock_hvac.secrets.kv.v2.create_or_update_secret.call_count == 2
     mock_hvac.secrets.kv.v2.create_or_update_secret.assert_has_calls(

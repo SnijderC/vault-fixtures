@@ -5,11 +5,11 @@ from unittest import mock
 
 import hvac
 import pytest
+from vault_fix.dump import dump, dump_to_fixture_file
+from vault_fix.serializers.json import json_serializer
+from vault_fix.serializers.yaml import yaml_serializer
+from vault_fix.type import NestedStrDict
 
-from core.dump import dump, dump_to_fixture_file
-from core.serializers.json import json_serializer
-from core.serializers.yaml import yaml_serializer
-from core.type import NestedStrDict
 from tests.fixtures import DUMPED_DATA_ENCRYPTED, DUMPED_DATA_PLAIN
 
 
@@ -58,7 +58,12 @@ def test_dump_to_fixture_file(
 ) -> None:
     data = io.StringIO()
     dump_to_fixture_file(
-        hvac=mock_hvac, fixture=data, mount_point="secret", path="/", serializer=serializer, password=password
+        hvac=mock_hvac,
+        fixture=data,
+        mount_point="secret",
+        path="/",
+        serializer=serializer,
+        password=password,
     )
     data.seek(0)
     assert data.read() == serializer(expected)

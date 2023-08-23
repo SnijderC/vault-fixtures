@@ -1,7 +1,7 @@
 import pytest
+from vault_fix.crypto.constants import VERSION, CipherMode
+from vault_fix.crypto.message import CipherMessage
 
-from core.crypto.constants import VERSION, CipherMode
-from core.crypto.message import CipherMessage
 from tests.crypto.test_symmetric import ENCRYPTED_SECRET_MESSAGE
 
 

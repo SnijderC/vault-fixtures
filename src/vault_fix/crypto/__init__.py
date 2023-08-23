@@ -1,7 +1,7 @@
 import json
 
-from core.crypto.symmetric import SymmetricCrypto
-from core.type import NestedStrDict
+from vault_fix.crypto.symmetric import SymmetricCrypto
+from vault_fix.type import NestedStrDict
 
 
 def decrypt_fixture_data(vaultFixture: dict, cipher: SymmetricCrypto | None = None) -> NestedStrDict:

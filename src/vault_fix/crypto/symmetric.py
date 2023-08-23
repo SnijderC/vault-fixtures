@@ -18,8 +18,8 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-from core.crypto.constants import PBKDF2_ITERATIONS, PBKDF2_KEY_LEN, AESKeySize, CipherMode
-from core.crypto.message import CipherMessage
+from vault_fix.crypto.constants import PBKDF2_ITERATIONS, PBKDF2_KEY_LEN, AESKeySize, CipherMode
+from vault_fix.crypto.message import CipherMessage
 
 
 class SymmetricCrypto:
@@ -35,7 +35,11 @@ class SymmetricCrypto:
 
     @lru_cache(1000)
     def _derive_key_from_password(
-        self, password: str, salt: bytes, length: Optional[int] = None, iterations: Optional[int] = None
+        self,
+        password: str,
+        salt: bytes,
+        length: Optional[int] = None,
+        iterations: Optional[int] = None,
     ) -> bytes:
         """
         Apply PBKDF2HMAC to the password and a salt to generate a secure key.

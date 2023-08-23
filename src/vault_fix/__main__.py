@@ -12,14 +12,15 @@ import typer
 import yaml
 from hvac.exceptions import VaultError
 
-from core.dump import dump_to_fixture_file
-from core.load import load_fixture_from_file
-from core.log import get_log_level, get_logger
-from core.serializers import DeSerializerChoices, SerializerChoices
-from core.serializers.json import json_deserializer, json_serializer
-from core.serializers.yaml import yaml_deserializer, yaml_serializer
+from vault_fix import __version__
+from vault_fix.dump import dump_to_fixture_file
+from vault_fix.load import load_fixture_from_file
+from vault_fix.log import get_log_level, get_logger
+from vault_fix.serializers import DeSerializerChoices, SerializerChoices
+from vault_fix.serializers.json import json_deserializer, json_serializer
+from vault_fix.serializers.yaml import yaml_deserializer, yaml_serializer
 
-app = typer.Typer(help="Load or dump data?")
+cli = typer.Typer(help="Load or dump data?")
 
 
 def get_hvac_client(host: str, port: int, token: str, tls: bool) -> hvac.Client:
@@ -63,7 +64,15 @@ def error_handler(log: logging.Logger) -> Generator[None, Any, None]:
         typer.Exit(127)
 
 
-@app.command(help="Load up, and dump secrets to and from Vault.")
+@cli.command(help="Print the vault-fix version and exit.")
+def version():
+    logging.basicConfig(format="%(message)s")
+    log = logging.getLogger(__name__)
+    log.setLevel(logging.INFO)
+    log.info(f"vault-fix v{__version__}")
+
+
+@cli.command(help="Load up, and dump secrets to and from Vault.")
 def dump(
     mount: Annotated[str, typer.Argument(help="Vault mount")],
     path: Annotated[str, typer.Argument(help="Vault path within the mount")],
@@ -74,7 +83,10 @@ def dump(
     verbose: Annotated[
         int,
         typer.Option(
-            "--verbose", "-v", count=True, help="Specify verbosity level by passing more 1 or more -v -vv -vvv's"
+            "--verbose",
+            "-v",
+            count=True,
+            help="Specify verbosity level by passing more 1 or more -v -vv -vvv's",
         ),
     ] = 0,
     file: Annotated[
@@ -138,7 +150,7 @@ def dump(
                 fh.close()
 
 
-@app.command(help="Load up, and dump secrets to and from Vault.")
+@cli.command(help="Load up, and dump secrets to and from Vault.")
 def load(
     mount: Annotated[str, typer.Argument(help="Vault mount")],
     path: Annotated[str, typer.Argument(help="Vault path within the mount")],
@@ -149,7 +161,10 @@ def load(
     verbose: Annotated[
         int,
         typer.Option(
-            "--verbose", "-v", count=True, help="Specify verbosity level by passing more 1 or more -v -vv -vvv's"
+            "--verbose",
+            "-v",
+            count=True,
+            help="Specify verbosity level by passing more 1 or more -v -vv -vvv's",
         ),
     ] = 0,
     file: Annotated[str, typer.Option("-f", "--file", help="Input file, assumes stdin if not specified")] = "-",
@@ -173,7 +188,10 @@ def load(
         typer.Option(
             "-d",
             "--dry",
-            help="Do a dry-run, parses the file and does the load up to the point where vault is updated with the secrets.",
+            help=(
+                "Do a dry-run, parses the file and does the load up to the point where vault is updated with the"
+                " secrets."
+            ),
         ),
     ] = False,
 ) -> None:
@@ -205,7 +223,3 @@ def load(
         finally:
             if fh is not sys.stdin:
                 fh.close()
-
-
-if __name__ == "__main__":
-    app()

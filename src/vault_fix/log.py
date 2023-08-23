@@ -11,7 +11,7 @@ def get_log_level(verbose):
 def get_logger(name: str, level: int):
     logging.basicConfig(
         level=level,
-        format="%(levelname)-8s [%(filename)s:%(lineno)d] %(message)s",
+        format="[%(message)s",
         datefmt="[%X]",
         handlers=[RichHandler(rich_tracebacks=True)],
     )
