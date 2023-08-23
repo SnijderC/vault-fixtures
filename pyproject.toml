@@ -1,6 +1,6 @@
 [project]
 name = "vault-fix"
-version = "1.0.0"
+dynamic = ["version"]
 description = "Tool for importing and exporting vault fixture files"
 license = { file = "LICENSE.txt" }
 requires-python = ">=3.11"
@@ -8,11 +8,11 @@ authors = [{ name = "Chris Snijder", email = "github@chrissnijder.nl" }]
 
 keywords = ["vault", "hasicorp", "fixture", "testing", "migration"]
 dependencies = [
-    "cryptography==41.0.0",
-    "hvac==1.1.0",
-    "pyyaml==6.0",
-    "rich==13.5.2",
-    "typer[all]==0.9.0",
+    "cryptography~=41.0.0",
+    "hvac~=1.1.0",
+    "pyyaml~=6.0",
+    "rich~=13.5.2",
+    "typer[all]~=0.9.0",
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -30,23 +30,19 @@ Homepage = "https://github.com/SnijderC/vault-fixtures"
 
 [project.optional-dependencies]
 dev = [
-    "black==23.3.0",
-    "coverage==7.2.7",
-    "pip-tools==7.1.0",
-    "pytest==7.3.2",
-    "pytest-asyncio==0.21.0",
-    "pytest-cov==4.0.0",
-    "pytest-random-order==1.1.0",
+    "black>=23.3.0",
+    "coverage>=7.2.7",
+    "hatch>=1.7.0",
+    "pip-tools>=7.1.0",
+    "pytest>=7.3.2",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "pytest-random-order>=1.1.0",
 ]
-build = ["build==0.10.0", "bumpver==2023.1126", "twine==4.0.2"]
-[build-system]
-requires = ["setuptools>=65.5.0", "wheel"]
-build-backend = "setuptools.build_meta"
 
-[tool.setuptools.dynamic]
-dependencies = { file = ["requirements/core.txt"] }
-optional-dependencies.dev = { file = ["requirements/dev.txt"] }
-optional-dependencies.build = { file = ["requirements/build.txt"] }
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.ruff]
 line-length = 120
@@ -81,27 +77,17 @@ show_missing = true
 skip_covered = false
 fail_under = 45
 
-[tool.bumpver]
-current_version = "1.0.0"
-version_pattern = "MAJOR.MINOR.PATCH"
-commit_message = "Bump version {old_version} -> {new_version}"
-commit = true
-tag = true
-push = false
-
-[tool.bumpver.file_patterns]
-"pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
-"__init__.py" = ['__version__ = "{version}"']
-"src/reader/__init__.py" = ["{version}"]
-
 [project.scripts]
 vault-fix = "vault_fix.__main__:cli"
 
-[tool.setuptools]
-package-dir = { "" = "src" }
+[tool.hatch.build.targets.wheel]
+packages = ["src/vault_fix"]
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.hatch.version]
+path = "src/vault_fix/__init__.py"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+
+[tool.hatch.build.targets.sdist]
+exclude = ["/.vscode", "/.pre-commit-config.yaml"]
