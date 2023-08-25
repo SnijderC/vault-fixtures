@@ -86,8 +86,9 @@ packages = ["src/vault_fix"]
 [tool.hatch.version]
 path = "src/vault_fix/__init__.py"
 
+[tool.hatch.build.targets.sdist]
+exclude = ["/.vscode", "/.pre-commit-config.yaml"]
+
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 
-[tool.hatch.build.targets.sdist]
-exclude = ["/.vscode", "/.pre-commit-config.yaml"]
