@@ -69,13 +69,11 @@ init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
 
-[tool.coverage.run]
-source_pkgs = ["vault_fix", "tests"]
 
 [tool.coverage.report]
 show_missing = true
 skip_covered = false
-fail_under = 45
+fail_under = 95
 
 [project.scripts]
 vault-fix = "vault_fix.__main__:cli"
@@ -90,5 +88,13 @@ path = "src/vault_fix/__init__.py"
 exclude = ["/.vscode", "/.pre-commit-config.yaml"]
 
 [tool.pytest.ini_options]
+addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
+xfail_strict = true
+filterwarnings = ["error"]
+log_cli_level = "info"
 pythonpath = ["src"]
+testpaths = ["tests"]
+log_cli = true
 
+[tool.coverage.run]
+source_pkgs = ["vault_fix"]
