@@ -9,13 +9,7 @@ from vault_fix.serializers.json import json_deserializer, json_serializer
 from vault_fix.serializers.yaml import yaml_deserializer
 from vault_fix.type import NestedStrDict
 
-from tests.fixtures import DUMPED_DATA_ENCRYPTED, DUMPED_DATA_PLAIN
-
-
-@pytest.fixture
-def mock_hvac() -> mock.Mock:
-    client = mock.Mock(spec=hvac.Client)
-    return client
+from tests.unit.fixtures import DUMPED_DATA_ENCRYPTED, DUMPED_DATA_PLAIN
 
 
 def test_load(mock_hvac: hvac.Client) -> None:

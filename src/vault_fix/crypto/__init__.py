@@ -4,17 +4,12 @@ from vault_fix.crypto.symmetric import SymmetricCrypto
 from vault_fix.type import NestedStrDict
 
 
-def decrypt_fixture_data(vaultFixture: dict, cipher: SymmetricCrypto | None = None) -> NestedStrDict:
+def decrypt_fixture_data(vaultFixture: dict, cipher: SymmetricCrypto) -> NestedStrDict:
     for path, data in vaultFixture.items():
         if path.endswith("/"):
             vaultFixture[path] = decrypt_fixture_data(data, cipher)
         else:
-            if isinstance(data, str) and data.startswith("encrypted//"):
-                if cipher is None:
-                    raise RuntimeError(
-                        "Fixture has encrypted entries, supply a password in order to import it successfully."
-                    )
-                vaultFixture[path] = json.loads(cipher.decrypt(data[11:]))
+            vaultFixture[path] = json.loads(cipher.decrypt(data[11:]))
     return vaultFixture
 
 

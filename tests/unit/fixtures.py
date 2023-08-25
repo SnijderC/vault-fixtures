@@ -1,5 +1,13 @@
+from vault_fix.serializers.json import json_serializer
+from vault_fix.serializers.yaml import yaml_serializer
 from vault_fix.type import NestedStrDict
 
+PASSWORD = "hunter2"
+SECRET_MESSAGE = "Some day this will be replaced by my lattice-based crypto"
+ENCRYPTED_SECRET_MESSAGE = (
+    "AgCBEAEAAABTU1NTU1NTU1NTU1NTU1NTTk5OTk5OTk5OTk5OFEwDr/XfJIqIcrX6qrFIS/Kmgf"
+    "KRMfYpJhtGLjCIT6YwKY4RRMrvT93JqJ0qb9mBkpWlGyeAi7pBB64RvbYg/584d+fgkNEvtQ=="
+)
 DUMPED_DATA_PLAIN: NestedStrDict = {
     "10-things-they-dont-want-you-to-know/": {
         "advertisement/": {"annoying-popup-secret": {"pop-up-secret": "close-button-doesnt-work"}},
@@ -22,3 +30,7 @@ DUMPED_DATA_ENCRYPTED: NestedStrDict = {
         },
     }
 }
+JSON_DUMPED_PLAIN = json_serializer(DUMPED_DATA_PLAIN)
+YAML_DUMPED_PLAIN = yaml_serializer(DUMPED_DATA_PLAIN)
+JSON_DUMPED_ENCRYPTED = json_serializer(DUMPED_DATA_ENCRYPTED)
+YAML_DUMPED_ENCRYPTED = yaml_serializer(DUMPED_DATA_ENCRYPTED)

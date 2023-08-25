@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-import contextlib
 import functools
 import json
-import logging
 import re
 import sys
-from typing import Annotated, Any, Generator
+from types import TracebackType
+from typing import IO, Annotated, Self, Type
 
 import hvac
 import typer
@@ -15,7 +14,7 @@ from hvac.exceptions import VaultError
 from vault_fix import __version__
 from vault_fix.dump import dump_to_fixture_file
 from vault_fix.load import load_fixture_from_file
-from vault_fix.log import get_log_level, get_logger
+from vault_fix.log import Logger, LogLevel
 from vault_fix.serializers import DeSerializerChoices, SerializerChoices
 from vault_fix.serializers.json import json_deserializer, json_serializer
 from vault_fix.serializers.yaml import yaml_deserializer, yaml_serializer
@@ -23,7 +22,7 @@ from vault_fix.serializers.yaml import yaml_deserializer, yaml_serializer
 cli = typer.Typer(help="Load or dump data?")
 
 
-def get_hvac_client(host: str, port: int, token: str, tls: bool) -> hvac.Client:
+def get_hvac_client(*, host: str, port: int, token: str, tls: bool) -> hvac.Client:
     scheme = "https://" if tls else "http://"
     client = hvac.Client(url=f"{scheme}{host}:{port}", token=token, timeout=5, verify=tls)
     return client
@@ -34,42 +33,59 @@ class RegexEqual(str):
         return bool(re.search(pattern, self))
 
 
-@contextlib.contextmanager
-def error_handler(log: logging.Logger) -> Generator[None, Any, None]:
-    try:
-        yield
-    except KeyboardInterrupt as exc:
-        log.warning(exc)
-        typer.Exit(1)
-    except VaultError as exc:
-        match RegexEqual(str(exc)):
-            case "no handler for route":
-                log.critical("Unable to connect to the mount point, are you sure it exists?")
-            case _:
-                log.critical(exc)
-        typer.Exit(2)
-    except json.JSONDecodeError as exc:
-        log.critical(f"Invalid JSON data supplied. {exc}", exc_info=log.level < 30)
-        typer.Exit(3)
-    except yaml.YAMLError as exc:
-        log.critical(f"Invalid YAML data supplied. {exc}", exc_info=log.level < 30)
-        typer.Exit(5)
-    except OSError as exc:
-        log.critical(exc, exc_info=log.level < 30)
-        typer.Exit(4)
-    except Exception as exc:
-        log.critical(exc, exc_info=log.level < 30)
-        if log.level <= logging.DEBUG:
-            raise exc
-        typer.Exit(127)
+class ErrorHandler:
+    def __init__(self, log: Logger) -> None:
+        self.log = log
+        self._close: list[IO] = []
+
+    def __enter__(self) -> Self:
+        return self
+
+    def finally_close(self, fh: IO) -> None:
+        self._close.append(fh)
+
+    def __exit__(
+        self, exc_type: Type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None
+    ) -> bool:
+        msg: str = ""
+        exit_code: int = 0
+
+        if exc_type == KeyboardInterrupt:
+            self.log.warning(str(exc_val))
+            exit_code = 1
+        elif exc_type == VaultError:
+            exit_code = 2
+            match RegexEqual(str(exc_val)):
+                case "no handler for route":
+                    msg = "Unable to connect to the mount point, are you sure it exists?"
+                case _:
+                    msg = str(exc_val)
+        elif exc_type == json.JSONDecodeError:
+            msg = f"Invalid JSON data supplied. {exc_val}"
+            exit_code = 3
+        elif exc_type == yaml.YAMLError:
+            msg = f"Invalid YAML data supplied. {exc_val}"
+            exit_code = 5
+        elif exc_type == OSError:
+            msg = str(exc_val)
+            exit_code = 4
+        else:
+            msg = str(exc_val)
+            exit_code = 127
+
+        if exc_type and exc_val and exc_tb:
+            self.log.exception(exc_type, exc_val, exc_tb)
+            self.log.critical(msg)
+        for fh in self._close:
+            if fh not in (sys.stdin, sys.stdout):
+                fh.close()
+        typer.Exit(exit_code)
+        return True
 
 
 @cli.command(help="Print the vault-fix version and exit.")
 def version():
-    logging.basicConfig(format="%(message)s")
-    log = logging.getLogger(__name__)
-    log.setLevel(logging.INFO)
-    log.info(f"vault-fix v{__version__}")
+    print(f"vault-fix v{__version__}")
 
 
 @cli.command(help="Load up, and dump secrets to and from Vault.")
@@ -126,28 +142,24 @@ def dump(
         ),
     ] = False,
 ) -> None:
-    log_level = get_log_level(verbose)
-    log = get_logger(__name__, log_level)
+    log = Logger(log_level=LogLevel(verbose))
     mount = mount.strip("/")
     _serializer = yaml_serializer
     if serializer == "json":
         _serializer = functools.partial(json_serializer, pretty=pretty)
-    with error_handler(log):
+    with ErrorHandler(log) as error_handler:
         client = get_hvac_client(host=host, port=port, token=token, tls=tls)
         fh = sys.stdout if file == "-" else open(file, "wt", encoding="utf-8")
-        try:
-            dump_to_fixture_file(
-                hvac=client,
-                fixture=fh,
-                mount_point=mount,
-                serializer=_serializer,
-                path=path,
-                password=password or None,
-                dry_run=dry,
-            )
-        finally:
-            if fh is not sys.stdout:
-                fh.close()
+        error_handler.finally_close(fh)
+        dump_to_fixture_file(
+            hvac=client,
+            fixture=fh,
+            mount_point=mount,
+            serializer=_serializer,
+            path=path,
+            password=password or None,
+            dry_run=dry,
+        )
 
 
 @cli.command(help="Load up, and dump secrets to and from Vault.")
@@ -195,31 +207,36 @@ def load(
         ),
     ] = False,
 ) -> None:
-    log_level = get_log_level(verbose)
-    log = get_logger(__name__, log_level)
+    log = Logger(log_level=LogLevel(verbose))
     mount = mount.strip("/")
-    with error_handler(log):
+    with ErrorHandler(log) as error_handler:
         client = get_hvac_client(host=host, port=port, token=token, tls=tls)
 
         if file != "-" and not file.endswith((".yml", ".yaml", ".json")):
             raise RuntimeError("Invalid vault fixture file type, should be a YAML or JSON file.")
 
-        if deserializer == "auto" and file.endswith(".json"):
-            _deserializer = json_deserializer
-        else:
-            _deserializer = yaml_deserializer if deserializer == "auto" else json_deserializer
-
         fh = sys.stdin if file == "-" else open(file, "rt", encoding="utf-8")
-        try:
-            load_fixture_from_file(
-                hvac=client,
-                fixture=fh,
-                mount_point=mount,
-                deserializer=_deserializer,
-                path=path,
-                password=password or None,
-                dry_run=dry,
-            )
-        finally:
-            if fh is not sys.stdin:
-                fh.close()
+        error_handler.finally_close(fh)
+        if deserializer == "auto":
+            if file == "-":
+                if fh.read(1) == "{":
+                    _deserializer = json_deserializer
+                else:
+                    _deserializer = yaml_deserializer
+                fh.seek(0)
+            elif file.endswith(".json"):
+                _deserializer = json_deserializer
+            else:
+                _deserializer = yaml_deserializer
+        else:
+            _deserializer = yaml_deserializer if deserializer == "yaml" else json_deserializer
+
+        load_fixture_from_file(
+            hvac=client,
+            fixture=fh,
+            mount_point=mount,
+            deserializer=_deserializer,
+            path=path,
+            password=password or None,
+            dry_run=dry,
+        )

@@ -44,20 +44,22 @@ def load(*, hvac: hvac.Client, fixture: dict, mount_point: str, path: str, dry_r
     :param hvac: Initialised hvac.Client object.
     :param fixture: Secrets data to be imported into Vault.
     :param mount_point: The mount_point in Vault where the secrets should be stored.
-    :param path: The path in Vault where the secrets should be stored.
+    :param path: The path in the fixture file from which you want to import secrets to the same path in Vault.
     """
+    parent = ""
     for _path in path.strip("/").split("/"):
         if _path:
+            parent = f"{parent}{_path}/"
             fixture = fixture[f"{_path}/"]
 
-    for _path, secrets in fixture_deserialize(data=fixture):
+    for _path, secrets in fixture_deserialize(data=fixture, parent=parent):
         if isinstance(secrets, str) and secrets.startswith("encrypted//"):
             raise RuntimeError("Fixture file is encrypted but not password was passed.")
         if not dry_run:
             hvac.secrets.kv.v2.create_or_update_secret(path=_path, secret=secrets, mount_point=mount_point)
 
 
-def fixture_deserialize(*, data: dict, _parent: str = "") -> Generator[tuple[str, str | NestedStrDict], None, None]:
+def fixture_deserialize(*, data: dict, parent: str = "/") -> Generator[tuple[str, str | NestedStrDict], None, None]:
     """
     Changes a dictionary to a generator of tuples with paths as the first entry and secrets data as the second.
 
@@ -75,7 +77,7 @@ def fixture_deserialize(*, data: dict, _parent: str = "") -> Generator[tuple[str
     """
     for path, _data in data.items():
         if path.endswith("/"):
-            for entry in fixture_deserialize(data=_data, _parent=f"{_parent}{path}"):
+            for entry in fixture_deserialize(data=_data, parent=f"{parent}{path}"):
                 yield entry
         else:
-            yield (f"{_parent}{path}", _data)
+            yield (f"{parent}{path}", _data)

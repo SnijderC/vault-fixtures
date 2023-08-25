@@ -5,12 +5,7 @@ import pytest
 from vault_fix import crypto
 from vault_fix.crypto.constants import AESKeySize
 
-PASSWORD = "hunter2"
-SECRET_MESSAGE = "Some day this will be replaced by my lattice-based crypto"
-ENCRYPTED_SECRET_MESSAGE = (
-    "AgCBEAEAAABTU1NTU1NTU1NTU1NTU1NTTk5OTk5OTk5OTk5OFEwDr/XfJIqIcrX6qrFIS/Kmgf"
-    "KRMfYpJhtGLjCIT6YwKY4RRMrvT93JqJ0qb9mBkpWlGyeAi7pBB64RvbYg/584d+fgkNEvtQ=="
-)
+from tests.unit.fixtures import ENCRYPTED_SECRET_MESSAGE, PASSWORD, SECRET_MESSAGE
 
 
 @pytest.fixture()
