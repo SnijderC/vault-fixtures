@@ -1,7 +1,7 @@
 # Installation
 
 ```bash
-pip install .
+pip install vault-fix
 ```
 
 # Usage
@@ -155,8 +155,27 @@ vault-fix dump secret / -H vault.dev.yourdomain.com | vault-fix load secret / --
 
 # Hacking on this utility
 
+Checkout the project, make a virtual env with hatch and install dependencies.
+
 ```bash
-python -m venv venv
-source venv/bin/activate
-pip install -e '.[dev]'
+git checkout git@github.com:SnijderC/vault-fix.git
+cd vault-fix
+pre-commit install
+pip install hatch
+hatch shell
+```
+
+## Running tests
+
+If you're in a hatch shell, exit it first, then:
+
+```bash
+hatch run test:pytest
+```
+
+This will test vault-fix against Python 3.9 - 3.11. If you don't have all of those, they will be skipped. You can
+install them with [pyenv](https://github.com/pyenv/pyenv#installation):
+
+```bash
+pyenv install 3.9 3.10 3.11
 ```
