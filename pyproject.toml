@@ -5,7 +5,7 @@ description = "Tool for importing and exporting vault fixture files"
 license = { file = "LICENSE.txt" }
 requires-python = ">=3.9"
 authors = [{ name = "Chris Snijder", email = "github@chrissnijder.nl" }]
-
+readme = "README.md"
 keywords = ["vault", "hasicorp", "fixture", "testing", "migration"]
 dependencies = [
     "cryptography~=41.0.0",
