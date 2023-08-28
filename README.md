@@ -1,10 +1,30 @@
-# Installation
+# Vault-fix
+
+vault-fix is a CLI utility and python package that helps exporting and importing secrets to and from [Vault] instances.
+You can use this either to load fixture files for local development (it's original purpose). Or to migrate data from
+Vault instance to another, while secrets may be [encrypted](#Encrypting-output) and/or
+[piped to another vault-fix instance](#Directing-data-to-the-load-command) so the data is not persisted.
+
+## Historical context
+
+vault-fix was created to address an issue with the default mode of [Vault instances in dev mode], for local development.
+Vault will start with ephemeral storage, i.e. in-memory, mounting a volume will not make it persistent. If you want to
+have persistent data, you'd have to provision a mount and a volume. However, this will make your local test environment
+more stateful, which is not always desirable. Plus a normal Vault instance will can "seal" itself to protect itself
+from attackers, which is not something you normally want to deal with during development.
+
+Instead you may want to load a known fixture, containing a curated set of secrets that you don't want to manually set
+every time you restarted vault. In other words, a fixture. This allows you to start from a clean slate every time you
+test or debug. You can [automate the loading](#Using-vault-fix-as-a-Python-package) or dumping of secrets, and/or use
+the CLI.
+
+## Installation
 
 ```bash
 pip install vault-fix
 ```
 
-# Usage
+## Usage
 
 Finding out how this works:
 
@@ -146,6 +166,37 @@ Which brings us to this command, that allow you to migrate secrets between vault
 vault-fix dump secret / -H vault.dev.yourdomain.com | vault-fix load secret / --no-tls
 ```
 
+## Using vault-fix as a Python package
+
+One of the best things about this utility is that you can automatically load fixtures to a local vault dev server, e.g.
+during application startup.
+
+```python
+from hvac import Client
+from vault_fix.load import load_fixture_from_file
+from vault_fix.serializers.yaml import yaml_deserializer
+
+# Vault docker container running on your local machine in dev mode, with ephemeral storage.
+# Assuming the following defaults
+VAULT_ADDR = "http://vault:8200"
+VAULT_TOKEN = "root"
+VAULT_TLS_ENABLED = False
+VAULT_MOUNT = "secret"
+FIXTURE_PATH = "../vault_fixture_local_dev.yaml"
+
+def load_vault_secrets() -> None:
+    print(f"Attempting to import vault fixture from {FIXTURE_PATH}")
+    client = Client(url=VAULT_ADDR, token=VAULT_TOKEN, verify=VAULT_TLS_ENABLED)
+    try:
+        with open(FIXTURE_PATH, "rt") as fixture_fh:
+            load_fixture_from_file(
+                hvac=client, fixture=fixture_fh, mount_point=VAULT_MOUNT, deserializer=yaml_deserializer
+            )
+        print(f"Imported vault fixture from {FIXTURE_PATH}")
+    except OSError:
+        print(f"Can't read fixture file from {FIXTURE_PATH}")
+```
+
 ### Other good to knows
 
 - The path parameter specifies the path in the vault server you want to dump.
@@ -153,7 +204,7 @@ vault-fix dump secret / -H vault.dev.yourdomain.com | vault-fix load secret / --
   dump or load from servers or fixtures respectively.
 - vault-fix does not dump or import metadata, including previous versions of secrets.
 
-# Hacking on this utility
+## Hacking on this utility
 
 Checkout the project, make a virtual env with hatch and install dependencies.
 
@@ -165,7 +216,7 @@ pip install hatch
 hatch shell
 ```
 
-## Running tests
+### Running tests
 
 If you're in a hatch shell, exit it first, then:
 
@@ -179,3 +230,6 @@ install them with [pyenv](https://github.com/pyenv/pyenv#installation):
 ```bash
 pyenv install 3.9 3.10 3.11
 ```
+
+[Vault]: https://www.vaultproject.io/
+[Vault instances in dev mode]: https://developer.hashicorp.com/vault/tutorials/getting-started/getting-started-dev-server#starting-the-dev-server

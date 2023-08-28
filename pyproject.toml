@@ -1,7 +1,7 @@
 [project]
 name = "vault-fix"
 dynamic = ["version"]
-description = "Tool for importing and exporting vault fixture files"
+description = "Tool for importing and exporting vault fixture files to and from vault dev mode instances."
 license = { file = "LICENSE.txt" }
 requires-python = ">=3.9"
 authors = [{ name = "Chris Snijder", email = "github@chrissnijder.nl" }]
