@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 import functools
 import json
-import re
 import sys
 from types import TracebackType
-from typing import IO, Annotated, Self, Type
+from typing import IO, Annotated, Type, Union
 
 import hvac
 import typer
@@ -28,24 +27,22 @@ def _get_hvac_client(*, host: str, port: int, token: str, tls: bool) -> hvac.Cli
     return client
 
 
-class _RegexEqual(str):
-    def __eq__(self, pattern) -> bool:
-        return bool(re.search(pattern, self))
-
-
 class _ErrorHandler:
     def __init__(self, log: Logger) -> None:
         self.log = log
         self._close: list[IO] = []
 
-    def __enter__(self) -> Self:
+    def __enter__(self) -> "_ErrorHandler":
         return self
 
     def finally_close(self, fh: IO) -> None:
         self._close.append(fh)
 
     def __exit__(
-        self, exc_type: Type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None
+        self,
+        exc_type: Union[Type[BaseException], None],
+        exc_val: Union[BaseException, None],
+        exc_tb: Union[TracebackType, None],
     ) -> bool:
         msg: str = ""
         exit_code: int = 0
@@ -55,11 +52,10 @@ class _ErrorHandler:
             exit_code = 1
         elif exc_type == VaultError:
             exit_code = 2
-            match _RegexEqual(str(exc_val)):
-                case "no handler for route":
-                    msg = "Unable to connect to the mount point, are you sure it exists?"
-                case _:
-                    msg = str(exc_val)
+            if "no handler for route" in str(exc_val):
+                msg = "Unable to connect to the mount point, are you sure it exists?"
+            else:
+                msg = str(exc_val)
         elif exc_type == json.JSONDecodeError:
             msg = f"Invalid JSON data supplied. {exc_val}"
             exit_code = 3

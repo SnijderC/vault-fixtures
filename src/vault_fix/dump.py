@@ -1,4 +1,4 @@
-from typing import Callable, TextIO
+from typing import Callable, TextIO, Union
 
 import hvac
 
@@ -14,7 +14,7 @@ def dump_to_fixture_file(
     mount_point,
     serializer: Callable[[NestedStrDict], str],
     path: str = "/",
-    password: str | None = None,
+    password: Union[str, None] = None,
     dry_run: bool = False,
 ):
     fixture_data = dump(

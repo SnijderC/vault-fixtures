@@ -1,4 +1,4 @@
-from typing import Callable, Generator, TextIO
+from typing import Callable, Generator, TextIO, Union
 
 import hvac
 
@@ -14,7 +14,7 @@ def load_fixture_from_file(
     mount_point,
     deserializer: Callable[[TextIO], NestedStrDict],
     path: str = "/",
-    password: str | None = None,
+    password: Union[str, None] = None,
     dry_run: bool = False,
 ) -> None:
     fixture_data = deserializer(fixture)
@@ -59,7 +59,9 @@ def load(*, hvac: hvac.Client, fixture: dict, mount_point: str, path: str, dry_r
             hvac.secrets.kv.v2.create_or_update_secret(path=_path, secret=secrets, mount_point=mount_point)
 
 
-def _fixture_deserialize(*, data: dict, parent: str = "/") -> Generator[tuple[str, str | NestedStrDict], None, None]:
+def _fixture_deserialize(
+    *, data: dict, parent: str = "/"
+) -> Generator[tuple[str, Union[str, NestedStrDict]], None, None]:
     """
     Changes a dictionary to a generator of tuples with paths as the first entry and secrets data as the second.
 

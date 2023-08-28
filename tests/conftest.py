@@ -6,7 +6,7 @@ import pytest
 
 
 @pytest.fixture
-def mock_urandom() -> Generator[mock.MagicMock | mock.AsyncMock, Any, None]:
+def mock_urandom() -> Generator[mock.MagicMock, Any, None]:
     """
     Mocking urandom in order to make salts predictable, making it possible to compare cipher tests from different runs.
     """

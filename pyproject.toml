@@ -3,7 +3,7 @@ name = "vault-fix"
 dynamic = ["version"]
 description = "Tool for importing and exporting vault fixture files"
 license = { file = "LICENSE.txt" }
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 authors = [{ name = "Chris Snijder", email = "github@chrissnijder.nl" }]
 
 keywords = ["vault", "hasicorp", "fixture", "testing", "migration"]
@@ -23,6 +23,8 @@ classifiers = [
     "Operating System :: MacOS",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
 [project.urls]
@@ -86,6 +88,15 @@ path = "src/vault_fix/__init__.py"
 
 [tool.hatch.build.targets.sdist]
 exclude = ["/.vscode", "/.pre-commit-config.yaml"]
+
+[tool.hatch.envs.default]
+dependencies = ["vault_fix[dev]"]
+
+[tool.hatch.envs.test]
+dependencies = ["pytest"]
+
+[[tool.hatch.envs.test.matrix]]
+python = ["3.9", "3.10", "3.11"]
 
 [tool.pytest.ini_options]
 addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
