@@ -1,6 +1,6 @@
+from vault_fix._type import NestedStrDict
 from vault_fix.serializers.json import json_serializer
 from vault_fix.serializers.yaml import yaml_serializer
-from vault_fix.type import NestedStrDict
 
 PASSWORD = "hunter2"
 SECRET_MESSAGE = "Some day this will be replaced by my lattice-based crypto"

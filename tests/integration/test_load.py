@@ -46,7 +46,7 @@ def test_load_from_fixture_stdin_cli(
     password_args: list[str],
     stdin_data: str,
 ) -> None:
-    with mock.patch("vault_fix.__main__.get_hvac_client", return_value=mock_hvac):
+    with mock.patch("vault_fix.__main__._get_hvac_client", return_value=mock_hvac):
         args = ["load", "secret", "/", *deserializer_args, *password_args, "-t", "root"]
         result = runner.invoke(cli, args=args, input=stdin_data)
     assert result.exit_code == 0
@@ -100,7 +100,7 @@ def test_load_from_fixture_file_cli(
     password_args: list[str],
     file: str,
 ) -> None:
-    with mock.patch("vault_fix.__main__.get_hvac_client", return_value=mock_hvac):
+    with mock.patch("vault_fix.__main__._get_hvac_client", return_value=mock_hvac):
         args = ["load", "secret", "/", *deserializer_args, *password_args, "-t", "root", "-f", file]
         result = runner.invoke(cli, args=args)
     assert result.exit_code == 0
@@ -134,7 +134,7 @@ def test_load_from_fixture_stdin_cli_path(
     password_args: list[str],
     stdin_data: str,
 ) -> None:
-    with mock.patch("vault_fix.__main__.get_hvac_client", return_value=mock_hvac):
+    with mock.patch("vault_fix.__main__._get_hvac_client", return_value=mock_hvac):
         args = [
             "load",
             "secret",
@@ -181,6 +181,6 @@ def test_load_from_fixture_stdin_cli_path(
 )
 def test_load_exceptions(mock_hvac: hvac.Client, file_data, args: list[str], error: str) -> None:
     args = ["load", "secret", "/", "-t", "root", *args]
-    with mock.patch("vault_fix.__main__.get_hvac_client", return_value=mock_hvac):
+    with mock.patch("vault_fix.__main__._get_hvac_client", return_value=mock_hvac):
         result = runner.invoke(cli, args=args)
     assert error in result.stderr

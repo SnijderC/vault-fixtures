@@ -2,9 +2,9 @@ from typing import Callable, TextIO
 
 import hvac
 
-from vault_fix.crypto import encrypt_fixture_data
-from vault_fix.crypto.symmetric import SymmetricCrypto
-from vault_fix.type import NestedStrDict
+from vault_fix._crypto import encrypt_fixture_data
+from vault_fix._crypto.symmetric import SymmetricCrypto
+from vault_fix._type import NestedStrDict
 
 
 def dump_to_fixture_file(

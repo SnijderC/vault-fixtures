@@ -13,7 +13,7 @@ import struct
 from dataclasses import dataclass
 from typing import Text
 
-from vault_fix.crypto.constants import SUPPORTED_MODES, SUPPORTED_VERSIONS, VERSION, AESKeySize, CipherMode
+from vault_fix._crypto.constants import SUPPORTED_MODES, SUPPORTED_VERSIONS, VERSION, AESKeySize, CipherMode
 
 
 @dataclass

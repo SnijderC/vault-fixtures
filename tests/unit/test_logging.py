@@ -2,13 +2,13 @@ import sys
 from unittest import mock
 
 import pytest
-from vault_fix.log import Logger, LogLevel
+from vault_fix._log import Logger, LogLevel
 
 
 @pytest.mark.parametrize("msg_level", list(LogLevel), ids=lambda lvl: f"msg-lvl-{lvl}")
 @pytest.mark.parametrize("log_level", list(LogLevel), ids=lambda lvl: f"log-lvl-{lvl}")
 def test_levels_respected(msg_level: LogLevel, log_level: int):
-    with mock.patch("vault_fix.log.Console") as mock_console:
+    with mock.patch("vault_fix._log.Console") as mock_console:
         log = Logger(log_level=LogLevel(log_level))
         log.log("foo", level=msg_level)
 
@@ -30,7 +30,7 @@ def test_levels_respected(msg_level: LogLevel, log_level: int):
     ids=lambda lvl: f"log-lvl-{lvl}",
 )
 def test_log_methods_call_with_correct_level(method: str, level: LogLevel) -> None:
-    with mock.patch("vault_fix.log.Logger.log") as mock_log:
+    with mock.patch("vault_fix._log.Logger.log") as mock_log:
         log = Logger(log_level=LogLevel.DEBUG)
         getattr(log, method)("foo")
         assert mock_log.call_args[1]["level"] == level

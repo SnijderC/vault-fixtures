@@ -6,9 +6,9 @@ import hvac
 import pytest
 from typer.testing import CliRunner
 from vault_fix.__main__ import cli
+from vault_fix._type import NestedStrDict
 from vault_fix.serializers.json import json_serializer
 from vault_fix.serializers.yaml import yaml_serializer
-from vault_fix.type import NestedStrDict
 
 from tests.unit.fixtures import DUMPED_DATA_ENCRYPTED, DUMPED_DATA_PLAIN
 
@@ -38,7 +38,7 @@ def test_dump_to_fixture_file_cli(
     serializer: Callable[[NestedStrDict], str],
     expected: NestedStrDict,
 ) -> None:
-    with mock.patch("vault_fix.__main__.get_hvac_client", return_value=mock_hvac):
+    with mock.patch("vault_fix.__main__._get_hvac_client", return_value=mock_hvac):
         args = ["dump", "secret", "/", *serializer_args, *password_args, "-t", "root"]
         result = runner.invoke(cli, args=args)
     assert result.exit_code == 0
@@ -53,7 +53,7 @@ def test_dump_to_fixture_file_cli_path() -> None:
     mock_hvac.secrets.kv.v2.read_secret_version.side_effect = [
         {"data": {"data": {"pop-up-secret": "close-button-doesnt-work"}}},
     ]
-    with mock.patch("vault_fix.__main__.get_hvac_client", return_value=mock_hvac):
+    with mock.patch("vault_fix.__main__._get_hvac_client", return_value=mock_hvac):
         args = ["dump", "secret", "10-things-they-dont-want-you-to-know/advertisement/", "-t", "root"]
         result = runner.invoke(cli, args=args)
         mock_hvac.secrets.kv.v2.list_secrets.assert_called_once_with(

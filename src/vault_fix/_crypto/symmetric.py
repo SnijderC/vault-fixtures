@@ -18,8 +18,8 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-from vault_fix.crypto.constants import PBKDF2_ITERATIONS, PBKDF2_KEY_LEN, AESKeySize, CipherMode
-from vault_fix.crypto.message import CipherMessage
+from vault_fix._crypto.constants import PBKDF2_ITERATIONS, PBKDF2_KEY_LEN, AESKeySize, CipherMode
+from vault_fix._crypto.message import CipherMessage
 
 
 class SymmetricCrypto:

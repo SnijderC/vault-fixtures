@@ -12,28 +12,28 @@ import yaml
 from hvac.exceptions import VaultError
 
 from vault_fix import __version__
+from vault_fix._log import Logger, LogLevel
 from vault_fix.dump import dump_to_fixture_file
 from vault_fix.load import load_fixture_from_file
-from vault_fix.log import Logger, LogLevel
-from vault_fix.serializers import DeSerializerChoices, SerializerChoices
+from vault_fix.serializers import _DeSerializerChoices, _SerializerChoices
 from vault_fix.serializers.json import json_deserializer, json_serializer
 from vault_fix.serializers.yaml import yaml_deserializer, yaml_serializer
 
 cli = typer.Typer(help="Load or dump data?")
 
 
-def get_hvac_client(*, host: str, port: int, token: str, tls: bool) -> hvac.Client:
+def _get_hvac_client(*, host: str, port: int, token: str, tls: bool) -> hvac.Client:
     scheme = "https://" if tls else "http://"
     client = hvac.Client(url=f"{scheme}{host}:{port}", token=token, timeout=5, verify=tls)
     return client
 
 
-class RegexEqual(str):
+class _RegexEqual(str):
     def __eq__(self, pattern) -> bool:
         return bool(re.search(pattern, self))
 
 
-class ErrorHandler:
+class _ErrorHandler:
     def __init__(self, log: Logger) -> None:
         self.log = log
         self._close: list[IO] = []
@@ -55,7 +55,7 @@ class ErrorHandler:
             exit_code = 1
         elif exc_type == VaultError:
             exit_code = 2
-            match RegexEqual(str(exc_val)):
+            match _RegexEqual(str(exc_val)):
                 case "no handler for route":
                     msg = "Unable to connect to the mount point, are you sure it exists?"
                 case _:
@@ -128,8 +128,8 @@ def dump(
     ] = "",
     pretty: Annotated[bool, typer.Option(help="Pretty print the output (if JSON formatted")] = True,
     serializer: Annotated[
-        SerializerChoices, typer.Option(help="Which serializer do you prefer? [default=yaml]")
-    ] = SerializerChoices.yaml,
+        _SerializerChoices, typer.Option(help="Which serializer do you prefer? [default=yaml]")
+    ] = _SerializerChoices.yaml,
     dry: Annotated[
         bool,
         typer.Option(
@@ -147,8 +147,8 @@ def dump(
     _serializer = yaml_serializer
     if serializer == "json":
         _serializer = functools.partial(json_serializer, pretty=pretty)
-    with ErrorHandler(log) as error_handler:
-        client = get_hvac_client(host=host, port=port, token=token, tls=tls)
+    with _ErrorHandler(log) as error_handler:
+        client = _get_hvac_client(host=host, port=port, token=token, tls=tls)
         fh = sys.stdout if file == "-" else open(file, "wt", encoding="utf-8")
         error_handler.finally_close(fh)
         dump_to_fixture_file(
@@ -193,8 +193,8 @@ def load(
         ),
     ] = "",
     deserializer: Annotated[
-        DeSerializerChoices, typer.Option(help="Which deserializer does the fixture file require?")
-    ] = DeSerializerChoices.auto,
+        _DeSerializerChoices, typer.Option(help="Which deserializer does the fixture file require?")
+    ] = _DeSerializerChoices.auto,
     dry: Annotated[
         bool,
         typer.Option(
@@ -209,8 +209,8 @@ def load(
 ) -> None:
     log = Logger(log_level=LogLevel(verbose))
     mount = mount.strip("/")
-    with ErrorHandler(log) as error_handler:
-        client = get_hvac_client(host=host, port=port, token=token, tls=tls)
+    with _ErrorHandler(log) as error_handler:
+        client = _get_hvac_client(host=host, port=port, token=token, tls=tls)
 
         if file != "-" and not file.endswith((".yml", ".yaml", ".json")):
             raise RuntimeError("Invalid vault fixture file type, should be a YAML or JSON file.")

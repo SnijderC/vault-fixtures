@@ -4,10 +4,10 @@ from unittest import mock
 
 import hvac
 import pytest
+from vault_fix._type import NestedStrDict
 from vault_fix.load import load, load_fixture_from_file
 from vault_fix.serializers.json import json_deserializer, json_serializer
 from vault_fix.serializers.yaml import yaml_deserializer
-from vault_fix.type import NestedStrDict
 
 from tests.unit.fixtures import DUMPED_DATA_ENCRYPTED, DUMPED_DATA_PLAIN
 

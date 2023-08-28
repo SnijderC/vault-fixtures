@@ -2,9 +2,9 @@ from typing import Callable, Generator, TextIO
 
 import hvac
 
-from vault_fix.crypto import decrypt_fixture_data
-from vault_fix.crypto.symmetric import SymmetricCrypto
-from vault_fix.type import NestedStrDict
+from vault_fix._crypto import decrypt_fixture_data
+from vault_fix._crypto.symmetric import SymmetricCrypto
+from vault_fix._type import NestedStrDict
 
 
 def load_fixture_from_file(
@@ -52,14 +52,14 @@ def load(*, hvac: hvac.Client, fixture: dict, mount_point: str, path: str, dry_r
             parent = f"{parent}{_path}/"
             fixture = fixture[f"{_path}/"]
 
-    for _path, secrets in fixture_deserialize(data=fixture, parent=parent):
+    for _path, secrets in _fixture_deserialize(data=fixture, parent=parent):
         if isinstance(secrets, str) and secrets.startswith("encrypted//"):
             raise RuntimeError("Fixture file is encrypted but not password was passed.")
         if not dry_run:
             hvac.secrets.kv.v2.create_or_update_secret(path=_path, secret=secrets, mount_point=mount_point)
 
 
-def fixture_deserialize(*, data: dict, parent: str = "/") -> Generator[tuple[str, str | NestedStrDict], None, None]:
+def _fixture_deserialize(*, data: dict, parent: str = "/") -> Generator[tuple[str, str | NestedStrDict], None, None]:
     """
     Changes a dictionary to a generator of tuples with paths as the first entry and secrets data as the second.
 
@@ -69,7 +69,7 @@ def fixture_deserialize(*, data: dict, parent: str = "/") -> Generator[tuple[str
     calls to the Vault API.
 
     e.g.
-    >>> entry = fixture_deserialize({ "foo/": {"bar/": {"baz": "spam"}}}).__next__()
+    >>> entry = _fixture_deserialize({ "foo/": {"bar/": {"baz": "spam"}}}).__next__()
     >>> assert entry == ('foo/bar/baz', 'spam')
 
     :param data: Data to deserialize
@@ -77,7 +77,7 @@ def fixture_deserialize(*, data: dict, parent: str = "/") -> Generator[tuple[str
     """
     for path, _data in data.items():
         if path.endswith("/"):
-            for entry in fixture_deserialize(data=_data, parent=f"{parent}{path}"):
+            for entry in _fixture_deserialize(data=_data, parent=f"{parent}{path}"):
                 yield entry
         else:
             yield (f"{parent}{path}", _data)

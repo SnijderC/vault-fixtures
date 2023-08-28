@@ -1,12 +1,12 @@
 import enum
 
 
-class SerializerChoices(enum.StrEnum):
+class _SerializerChoices(enum.StrEnum):
     json = "json"
     yaml = "yaml"
 
 
-class DeSerializerChoices(enum.StrEnum):
+class _DeSerializerChoices(enum.StrEnum):
     json = "json"
     yaml = "yaml"
     auto = "auto"
