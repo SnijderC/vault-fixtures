@@ -43,3 +43,29 @@ def test_dump_to_fixture_file_cli(
         result = runner.invoke(cli, args=args)
     assert result.exit_code == 0
     assert result.stdout == serializer(expected)
+
+
+def test_dump_to_fixture_file_cli_path() -> None:
+    mock_hvac = mock.Mock(spec=hvac.Client)
+    mock_hvac.secrets.kv.v2.list_secrets.side_effect = [
+        {"data": {"keys": ["annoying-popup-secret"]}},
+    ]
+    mock_hvac.secrets.kv.v2.read_secret_version.side_effect = [
+        {"data": {"data": {"pop-up-secret": "close-button-doesnt-work"}}},
+    ]
+    with mock.patch("vault_fix.__main__.get_hvac_client", return_value=mock_hvac):
+        args = ["dump", "secret", "10-things-they-dont-want-you-to-know/advertisement/", "-t", "root"]
+        result = runner.invoke(cli, args=args)
+        mock_hvac.secrets.kv.v2.list_secrets.assert_called_once_with(
+            path="10-things-they-dont-want-you-to-know/advertisement/",
+            mount_point="secret",
+        )
+        mock_hvac.secrets.kv.v2.read_secret_version.assert_called_once_with(
+            path="10-things-they-dont-want-you-to-know/advertisement/annoying-popup-secret",
+            mount_point="secret",
+        )
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "---\n10-things-they-dont-want-you-to-know/:\n  advertisement/:\n    annoying-popup-secret:"
+        "\n      pop-up-secret: close-button-doesnt-work\n"
+    )

@@ -30,6 +30,8 @@ DUMPED_DATA_ENCRYPTED: NestedStrDict = {
         },
     }
 }
+
+
 JSON_DUMPED_PLAIN = json_serializer(DUMPED_DATA_PLAIN)
 YAML_DUMPED_PLAIN = yaml_serializer(DUMPED_DATA_PLAIN)
 JSON_DUMPED_ENCRYPTED = json_serializer(DUMPED_DATA_ENCRYPTED)

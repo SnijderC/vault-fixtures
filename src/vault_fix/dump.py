@@ -17,7 +17,6 @@ def dump_to_fixture_file(
     password: str | None = None,
     dry_run: bool = False,
 ):
-    # json.dump works too, but makes testing much harder that it has to be.
     fixture_data = dump(
         hvac=hvac,
         mount_point=mount_point,
@@ -26,6 +25,11 @@ def dump_to_fixture_file(
     if password:
         cipher = SymmetricCrypto(password)
         fixture_data = encrypt_fixture_data(fixture_data, cipher)
+
+    for p in reversed(path.strip("/").split("/")):
+        if p:
+            fixture_data = {f"{p}/": fixture_data}
+
     if not dry_run:
         fixture.write(serializer(fixture_data))
 
@@ -52,7 +56,7 @@ def dump(*, hvac: hvac.Client, mount_point: str, path: str) -> NestedStrDict:
         if key.endswith("/"):
             result[key] = dump(hvac=hvac, path=f"{path}/{key}", mount_point=mount_point)
         else:
-            data = vault.read_secret_version(path=f"{path}/{key}", mount_point=mount_point)
+            data = vault.read_secret_version(path=f"{path}{key}", mount_point=mount_point)
             result[key] = data.get("data", {}).get("data", {})
 
     return result
