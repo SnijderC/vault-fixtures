@@ -122,16 +122,15 @@ def test_load_from_fixture_file_cli(
 
 
 @pytest.mark.parametrize(
-    "deserializer_args, password_args, stdin_data",
+    "deserializer_args, stdin_data",
     [
-        pytest.param(["--deserializer", "json"], [], JSON_DUMPED_PLAIN, id="JSON-plain"),
-        pytest.param(["--deserializer", "yaml"], [], YAML_DUMPED_PLAIN, id="YAML-plain"),
+        pytest.param(["--deserializer", "json"], JSON_DUMPED_PLAIN, id="JSON-plain"),
+        pytest.param(["--deserializer", "yaml"], YAML_DUMPED_PLAIN, id="YAML-plain"),
     ],
 )
 def test_load_from_fixture_stdin_cli_path(
     mock_hvac: hvac.Client,
     deserializer_args: list[str],
-    password_args: list[str],
     stdin_data: str,
 ) -> None:
     with mock.patch("vault_fix.__main__._get_hvac_client", return_value=mock_hvac):
@@ -140,7 +139,6 @@ def test_load_from_fixture_stdin_cli_path(
             "secret",
             "/10-things-they-dont-want-you-to-know/advertisement",
             *deserializer_args,
-            *password_args,
             "-t",
             "root",
         ]

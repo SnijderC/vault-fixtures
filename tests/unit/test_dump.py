@@ -51,3 +51,40 @@ def test_dump_to_fixture_file(
     )
     data.seek(0)
     assert data.read() == serializer(expected)
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        pytest.param("10-things-they-dont-want-you-to-know/advertisement", id="slash-no-prefix+no-suffix"),
+        pytest.param("/10-things-they-dont-want-you-to-know/advertisement", id="slash-prefix+no-suffix"),
+        pytest.param("/10-things-they-dont-want-you-to-know/advertisement/", id="slash-prefix+suffix"),
+        pytest.param("10-things-they-dont-want-you-to-know/advertisement/", id="slash-no-prefix+suffix"),
+    ],
+)
+def test_dump_from_fixture_path(path: str) -> None:
+    mock_hvac = mock.Mock(spec=hvac.Client)
+    mock_hvac.secrets.kv.v2.list_secrets.side_effect = [
+        {"data": {"keys": ["annoying-popup-secret"]}},
+    ]
+    mock_hvac.secrets.kv.v2.read_secret_version.side_effect = [
+        {"data": {"data": {"pop-up-secret": "close-button-doesnt-work"}}},
+    ]
+    data = io.StringIO()
+    with mock.patch("vault_fix.__main__._get_hvac_client", return_value=mock_hvac):
+        dump_to_fixture_file(
+            hvac=mock_hvac,
+            fixture=data,
+            mount_point="secret",
+            path=path,
+            serializer=yaml_serializer,
+            password=None,
+        )
+    mock_hvac.secrets.kv.v2.list_secrets.assert_called_once_with(
+        path="10-things-they-dont-want-you-to-know/advertisement",
+        mount_point="secret",
+    )
+    mock_hvac.secrets.kv.v2.read_secret_version.assert_called_once_with(
+        path="10-things-they-dont-want-you-to-know/advertisement/annoying-popup-secret",
+        mount_point="secret",
+    )

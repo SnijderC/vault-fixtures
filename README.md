@@ -1,7 +1,7 @@
 # Vault-fix
 
 vault-fix is a CLI utility and python package that helps exporting and importing secrets to and from [Vault] instances.
-You can use this either to load fixture files for local development (it's original purpose). Or to migrate data from
+You can use this either to load fixture files for local development (its original purpose). Or to migrate data from
 Vault instance to another, while secrets may be [encrypted](#Encrypting-output) and/or
 [piped to another vault-fix instance](#Directing-data-to-the-load-command) so the data is not persisted.
 

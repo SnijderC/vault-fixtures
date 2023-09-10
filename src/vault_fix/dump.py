@@ -49,14 +49,14 @@ def dump(*, hvac: hvac.Client, mount_point: str, path: str) -> NestedStrDict:
     result: NestedStrDict = dict()
 
     vault = hvac.secrets.kv.v2
-
+    path = path.strip("/")
     keys = vault.list_secrets(path=path, mount_point=mount_point).get("data", {}).get("keys", [])
 
     for key in keys:
         if key.endswith("/"):
             result[key] = dump(hvac=hvac, path=f"{path}/{key}", mount_point=mount_point)
         else:
-            data = vault.read_secret_version(path=f"{path}{key}", mount_point=mount_point)
+            data = vault.read_secret_version(path=f"{path}/{key}", mount_point=mount_point)
             result[key] = data.get("data", {}).get("data", {})
 
     return result

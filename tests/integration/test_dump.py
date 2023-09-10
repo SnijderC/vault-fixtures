@@ -57,7 +57,7 @@ def test_dump_to_fixture_file_cli_path() -> None:
         args = ["dump", "secret", "10-things-they-dont-want-you-to-know/advertisement/", "-t", "root"]
         result = runner.invoke(cli, args=args)
         mock_hvac.secrets.kv.v2.list_secrets.assert_called_once_with(
-            path="10-things-they-dont-want-you-to-know/advertisement/",
+            path="10-things-they-dont-want-you-to-know/advertisement",
             mount_point="secret",
         )
         mock_hvac.secrets.kv.v2.read_secret_version.assert_called_once_with(
