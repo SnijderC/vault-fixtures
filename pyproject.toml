@@ -8,11 +8,11 @@ authors = [{ name = "Chris Snijder", email = "github@chrissnijder.nl" }]
 readme = "README.md"
 keywords = ["vault", "hasicorp", "fixture", "testing", "migration"]
 dependencies = [
-    "cryptography~=41.0.0",
-    "hvac~=1.1.0",
-    "pyyaml~=6.0",
-    "rich~=13.5.2",
-    "typer[all]~=0.9.0",
+    "cryptography>=42.0.5",
+    "hvac>=2.2.0",
+    "pyyaml>=6.0",
+    "rich>=13.5.2",
+    "typer[all]>=0.9.0",
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
