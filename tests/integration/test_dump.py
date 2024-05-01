@@ -1,12 +1,11 @@
 import functools
-from typing import Callable
+from typing import Any, Callable
 from unittest import mock
 
 import hvac
 import pytest
 from typer.testing import CliRunner
 from vault_fix.__main__ import cli
-from vault_fix._type import NestedStrDict
 from vault_fix.serializers.json import json_serializer
 from vault_fix.serializers.yaml import yaml_serializer
 
@@ -35,8 +34,8 @@ def test_dump_to_fixture_file_cli(
     mock_urandom: mock.Mock,
     serializer_args: list[str],
     password_args: list[str],
-    serializer: Callable[[NestedStrDict], str],
-    expected: NestedStrDict,
+    serializer: Callable[[dict[str, Any]], str],
+    expected: dict[str, Any],
 ) -> None:
     with mock.patch("vault_fix.__main__._get_hvac_client", return_value=mock_hvac):
         args = ["dump", "secret", "/", *serializer_args, *password_args, "-t", "root"]

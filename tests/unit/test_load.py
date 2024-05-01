@@ -1,10 +1,9 @@
 import io
-from typing import Callable, TextIO
+from typing import Any, Callable, TextIO
 from unittest import mock
 
 import hvac
 import pytest
-from vault_fix._type import NestedStrDict
 from vault_fix.load import load, load_fixture_from_file
 from vault_fix.serializers.json import json_deserializer, json_serializer
 from vault_fix.serializers.yaml import yaml_deserializer
@@ -32,9 +31,9 @@ def test_load(mock_hvac: hvac.Client) -> None:
 )
 def test_load_from_fixture_file(
     mock_hvac: hvac.Client,
-    deserializer: Callable[[TextIO], NestedStrDict],
+    deserializer: Callable[[TextIO], dict[str, Any]],
     password: str,
-    fixture: NestedStrDict,
+    fixture: dict[str, Any],
 ) -> None:
     _fixture = io.StringIO(json_serializer(fixture))
     load_fixture_from_file(

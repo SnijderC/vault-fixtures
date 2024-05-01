@@ -1,10 +1,10 @@
 import json
+from typing import Any
 
 from vault_fix._crypto.symmetric import SymmetricCrypto
-from vault_fix._type import NestedStrDict
 
 
-def decrypt_fixture_data(vaultFixture: dict, cipher: SymmetricCrypto) -> NestedStrDict:
+def decrypt_fixture_data(vaultFixture: dict[str, Any], cipher: SymmetricCrypto) -> dict[str, Any]:
     for path, data in vaultFixture.items():
         if path.endswith("/"):
             vaultFixture[path] = decrypt_fixture_data(data, cipher)
@@ -13,7 +13,7 @@ def decrypt_fixture_data(vaultFixture: dict, cipher: SymmetricCrypto) -> NestedS
     return vaultFixture
 
 
-def encrypt_fixture_data(vaultFixture: dict, cipher: SymmetricCrypto) -> NestedStrDict:
+def encrypt_fixture_data(vaultFixture: dict[str, Any], cipher: SymmetricCrypto) -> dict[str, Any]:
     for path, data in vaultFixture.items():
         if path.endswith("/"):
             vaultFixture[path] = encrypt_fixture_data(data, cipher)

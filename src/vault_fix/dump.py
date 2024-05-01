@@ -1,10 +1,9 @@
-from typing import Callable, TextIO, Union
+from typing import Any, Callable, TextIO, Union
 
 import hvac
 
 from vault_fix._crypto import encrypt_fixture_data
 from vault_fix._crypto.symmetric import SymmetricCrypto
-from vault_fix._type import NestedStrDict
 
 
 def dump_to_fixture_file(
@@ -12,7 +11,7 @@ def dump_to_fixture_file(
     hvac: hvac.Client,
     fixture: TextIO,
     mount_point,
-    serializer: Callable[[NestedStrDict], str],
+    serializer: Callable[[dict[str, Any]], str],
     path: str = "/",
     password: Union[str, None] = None,
     dry_run: bool = False,
@@ -34,7 +33,7 @@ def dump_to_fixture_file(
         fixture.write(serializer(fixture_data))
 
 
-def dump(*, hvac: hvac.Client, mount_point: str, path: str) -> NestedStrDict:
+def dump(*, hvac: hvac.Client, mount_point: str, path: str) -> dict[str, Any]:
     """
     Dump all secrets in the hierarchy under ``path`` to a dict.
 
@@ -46,7 +45,7 @@ def dump(*, hvac: hvac.Client, mount_point: str, path: str) -> NestedStrDict:
     :returns: Dictionary of secrets under ``{mount_point}/{path}``.
     """
     key: str
-    result: NestedStrDict = dict()
+    result = {}
 
     vault = hvac.secrets.kv.v2
     path = path.strip("/")

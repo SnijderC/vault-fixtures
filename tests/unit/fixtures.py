@@ -1,4 +1,3 @@
-from vault_fix._type import NestedStrDict
 from vault_fix.serializers.json import json_serializer
 from vault_fix.serializers.yaml import yaml_serializer
 
@@ -8,13 +7,14 @@ ENCRYPTED_SECRET_MESSAGE = (
     "AgCBEAEAAABTU1NTU1NTU1NTU1NTU1NTTk5OTk5OTk5OTk5OFEwDr/XfJIqIcrX6qrFIS/Kmgf"
     "KRMfYpJhtGLjCIT6YwKY4RRMrvT93JqJ0qb9mBkpWlGyeAi7pBB64RvbYg/584d+fgkNEvtQ=="
 )
-DUMPED_DATA_PLAIN: NestedStrDict = {
+DUMPED_DATA_PLAIN = {
     "10-things-they-dont-want-you-to-know/": {
         "advertisement/": {"annoying-popup-secret": {"pop-up-secret": "close-button-doesnt-work"}},
         "something-you-already-know/": {"secret-things-you-already-know": {"you-know-this": "click-bait-is-lame"}},
     }
 }
-DUMPED_DATA_ENCRYPTED: NestedStrDict = {
+
+DUMPED_DATA_ENCRYPTED = {
     "10-things-they-dont-want-you-to-know/": {
         "advertisement/": {
             "annoying-popup-secret": (

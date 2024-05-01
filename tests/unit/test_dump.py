@@ -1,11 +1,10 @@
 import functools
 import io
-from typing import Callable
+from typing import Any, Callable
 from unittest import mock
 
 import hvac
 import pytest
-from vault_fix._type import NestedStrDict
 from vault_fix.dump import dump, dump_to_fixture_file
 from vault_fix.serializers.json import json_serializer
 from vault_fix.serializers.yaml import yaml_serializer
@@ -36,9 +35,9 @@ def test_dump(mock_hvac: hvac.Client) -> None:
 def test_dump_to_fixture_file(
     mock_hvac: hvac.Client,
     mock_urandom: mock.Mock,
-    serializer: Callable[[NestedStrDict], str],
+    serializer: Callable[[dict[str, Any]], str],
     password: str,
-    expected: NestedStrDict,
+    expected: dict[str, Any],
 ) -> None:
     data = io.StringIO()
     dump_to_fixture_file(

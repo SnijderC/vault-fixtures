@@ -1,10 +1,9 @@
-from typing import Callable, Generator, TextIO, Union
+from typing import Any, Callable, Generator, TextIO, Union
 
 import hvac
 
 from vault_fix._crypto import decrypt_fixture_data
 from vault_fix._crypto.symmetric import SymmetricCrypto
-from vault_fix._type import NestedStrDict
 
 
 def load_fixture_from_file(
@@ -12,7 +11,7 @@ def load_fixture_from_file(
     hvac: hvac.Client,
     fixture: TextIO,
     mount_point,
-    deserializer: Callable[[TextIO], NestedStrDict],
+    deserializer: Callable[[TextIO], dict[str, Any]],
     path: str = "/",
     password: Union[str, None] = None,
     dry_run: bool = False,
@@ -24,7 +23,7 @@ def load_fixture_from_file(
     load(hvac=hvac, fixture=fixture_data, mount_point=mount_point, path=path, dry_run=dry_run)
 
 
-def load(*, hvac: hvac.Client, fixture: dict, mount_point: str, path: str, dry_run: bool = False) -> None:
+def load(*, hvac: hvac.Client, fixture: dict[str, Any], mount_point: str, path: str, dry_run: bool = False) -> None:
     """
     Imports a fixture from a dict.
 
@@ -60,8 +59,8 @@ def load(*, hvac: hvac.Client, fixture: dict, mount_point: str, path: str, dry_r
 
 
 def _fixture_deserialize(
-    *, data: dict, parent: str = "/"
-) -> Generator[tuple[str, Union[str, NestedStrDict]], None, None]:
+    *, data: dict[str, Any], parent: str = "/"
+) -> Generator[tuple[str, Union[str, dict[str, Any]]], None, None]:
     """
     Changes a dictionary to a generator of tuples with paths as the first entry and secrets data as the second.
 
